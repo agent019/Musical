@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Musical</string>
+    <string name="album_art">Album Art</string>
+    <string name="right_arrow">Right Arrow</string>
+</resources>
