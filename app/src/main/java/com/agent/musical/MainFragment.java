@@ -1,10 +1,13 @@
 package com.agent.musical;
 
-import com.agent.musical.models.MenuItem;
+import com.agent.musical.adapter.MenuAdapter;
+import com.agent.musical.model.MenuItem;
 
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -46,8 +49,17 @@ public class MainFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_main, container, false);
+        View view = inflater.inflate(R.layout.fragment_main, container, false);
+        RecyclerView menu = (RecyclerView) view.findViewById(R.id.main_recycler_view);
+        menu.setHasFixedSize(true);
+
+        RecyclerView.LayoutManager manager = new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false);
+        menu.setLayoutManager(manager);
+
+        MenuAdapter adapter = new MenuAdapter(getActivity(), itemList);
+        menu.setAdapter(adapter);
+
+        return view;
     }
 
     private void createMenuItemList() {

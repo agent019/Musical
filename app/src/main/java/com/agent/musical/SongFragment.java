@@ -3,12 +3,15 @@ package com.agent.musical;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.agent.musical.models.Song;
+import com.agent.musical.adapter.SongAdapter;
+import com.agent.musical.model.Song;
 
 import java.util.ArrayList;
 
@@ -73,7 +76,16 @@ public class SongFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_song, container, false);
+        View view = inflater.inflate(R.layout.fragment_song, container, false);
+        RecyclerView menu = (RecyclerView) view.findViewById(R.id.song_recycler_view);
+        menu.setHasFixedSize(true);
+
+        RecyclerView.LayoutManager manager = new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false);
+        menu.setLayoutManager(manager);
+
+        SongAdapter adapter = new SongAdapter(getActivity(), itemList);
+        menu.setAdapter(adapter);
+
+        return view;
     }
 }

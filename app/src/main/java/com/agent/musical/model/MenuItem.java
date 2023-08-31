@@ -1,4 +1,4 @@
-package com.agent.musical.models;
+package com.agent.musical.model;
 
 import androidx.fragment.app.Fragment;
 

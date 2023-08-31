@@ -5,27 +5,19 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-
-import com.agent.musical.models.Song;
-import com.google.android.material.snackbar.Snackbar;
-
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.provider.MediaStore;
 import android.util.Log;
-import android.view.View;
-import android.widget.MediaController;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.core.view.WindowCompat;
-import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.navigation.ui.AppBarConfiguration;
-import androidx.navigation.ui.NavigationUI;
 
-import com.agent.musical.databinding.ActivityMainBinding;
+import com.agent.musical.model.Song;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,9 +25,9 @@ import java.util.Comparator;
 
 public class MainActivity extends AppCompatActivity /*implements MediaController.MediaPlayerControl*/ {
 
+    private FragmentManager fm;
     public static final String TAG = "MainActivity";
     private AppBarConfiguration appBarConfiguration;
-    private ActivityMainBinding binding;
     public ArrayList<Song> songList;
     public ArrayList<Song> currentSongList = null;
 
@@ -49,14 +41,15 @@ public class MainActivity extends AppCompatActivity /*implements MediaController
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        binding = ActivityMainBinding.inflate(getLayoutInflater());
-        setContentView(binding.getRoot());
+        // TODO - Consider ViewBinding instead of calling by id here?
+        // https://developer.android.com/topic/libraries/view-binding
+        setContentView(R.layout.main_menu);
 
-        setSupportActionBar(binding.toolbar);
-
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
-        appBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();
-        NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
+        fm = getSupportFragmentManager();
+        Fragment frag = MainFragment.newInstance();
+        FragmentTransaction fragmentTransaction = fm.beginTransaction();
+        fragmentTransaction.add(R.id.main_layout, frag);
+        fragmentTransaction.commit();
 
         songList = new ArrayList<Song>();
         if (ContextCompat.checkSelfPermission(this, "android.permission.READ_MEDIA_AUDIO") != PackageManager.PERMISSION_GRANTED) {
@@ -84,6 +77,13 @@ public class MainActivity extends AppCompatActivity /*implements MediaController
 
     public ArrayList<Song> getCurrentSongList() {
         return currentSongList;
+    }
+
+    public void swapFragment(Fragment f) {
+        FragmentTransaction fragmentTransaction = fm.beginTransaction();
+        fragmentTransaction.replace(R.id.main_layout, f);
+        fragmentTransaction.addToBackStack(f.getClass().getName());
+        fragmentTransaction.commit();
     }
 
     public void populateSongList() {
@@ -156,9 +156,17 @@ public class MainActivity extends AppCompatActivity /*implements MediaController
     }
 
     @Override
+    public void onBackPressed() {
+        if(fm.getBackStackEntryCount() != 0) {
+            fm.popBackStack();
+        } else {
+            super.onBackPressed();
+        }
+    }
+
+    @Override
     public boolean onSupportNavigateUp() {
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
-        return NavigationUI.navigateUp(navController, appBarConfiguration)
-                || super.onSupportNavigateUp();
+        onBackPressed();
+        return false;
     }
 }

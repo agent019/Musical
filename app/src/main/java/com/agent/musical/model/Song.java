@@ -1,4 +1,4 @@
-package com.agent.musical.models;
+package com.agent.musical.model;
 
 /**
  * Created by GLaDOS on 4/19/2016.
