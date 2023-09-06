@@ -7,5 +7,5 @@
     <string name="next">Next</string>
     <string name="previous">Previous</string>
     <string name="album_art">Album Art</string>
-    <string name="right_arrow">Right Arrow</string>
+    <string name="right_icon">Right Icon</string>
 </resources>

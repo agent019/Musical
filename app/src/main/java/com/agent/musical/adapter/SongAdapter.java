@@ -54,7 +54,7 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
             super(itemView);
             nameView = (TextView) itemView.findViewById(R.id.song_name);
             artistView = (TextView) itemView.findViewById(R.id.song_artist);
-            albumView = (ImageView) itemView.findViewById(R.id.albumArt);
+            albumView = (ImageView) itemView.findViewById(R.id.album_art);
             itemView.setClickable(true);
             itemView.setOnClickListener(this);
         }

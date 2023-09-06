@@ -11,27 +11,22 @@
         android:gravity="center_vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_toLeftOf="@+id/albumArt"
-        android:layout_toStartOf="@+id/albumArt" />
+        android:layout_toStartOf="@+id/right_icon_frame" />
 
-    <ImageView
-        android:id="@+id/albumArt"
-        android:layout_width="50dp"
-        android:contentDescription="@string/right_arrow"
+    <FrameLayout
+        android:id="@+id/right_icon_frame"
+        android:layout_width="78dp"
         android:layout_height="match_parent"
-        android:src="@drawable/right"
         android:layout_alignParentTop="true"
         android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
+        android:layout_alignParentEnd="true">
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="@android:color/darker_gray"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="false"
-        android:layout_alignParentStart="false"
-        android:layout_gravity="start|end|bottom"
-        android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp" />
+        <ImageView
+            android:id="@+id/right_icon"
+            android:contentDescription="@string/right_icon"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_margin="5dp"
+            android:src="@drawable/right"/>
+    </FrameLayout>
 </RelativeLayout>

@@ -3,6 +3,7 @@ package com.agent.musical;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -80,8 +81,12 @@ public class SongFragment extends Fragment {
         RecyclerView menu = (RecyclerView) view.findViewById(R.id.song_recycler_view);
         menu.setHasFixedSize(true);
 
-        RecyclerView.LayoutManager manager = new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false);
-        menu.setLayoutManager(manager);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false);
+        menu.setLayoutManager(layoutManager);
+
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(menu.getContext(),
+                layoutManager.getOrientation());
+        menu.addItemDecoration(dividerItemDecoration);
 
         SongAdapter adapter = new SongAdapter(getActivity(), itemList);
         menu.setAdapter(adapter);

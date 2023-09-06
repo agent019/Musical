@@ -8,6 +8,7 @@ import android.os.Bundle;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.DividerItemDecoration;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -53,8 +54,12 @@ public class MainFragment extends Fragment {
         RecyclerView menu = (RecyclerView) view.findViewById(R.id.main_recycler_view);
         menu.setHasFixedSize(true);
 
-        RecyclerView.LayoutManager manager = new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false);
-        menu.setLayoutManager(manager);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false);
+        menu.setLayoutManager(layoutManager);
+
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(menu.getContext(),
+                layoutManager.getOrientation());
+        menu.addItemDecoration(dividerItemDecoration);
 
         MenuAdapter adapter = new MenuAdapter(getActivity(), itemList);
         menu.setAdapter(adapter);
