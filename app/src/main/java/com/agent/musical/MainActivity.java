@@ -135,16 +135,16 @@ public class MainActivity extends AppCompatActivity /*implements MediaController
             while (musicCursor.moveToNext());
             musicCursor.close();
         }*/
-        songList.add(new Song(1, "Sample song A", "Artist A", 101, "Sample Album A", 1001, "Hip-Hop/Rap", 260));
-        songList.add(new Song(2, "Sample song B", "Artist A", 101, "Sample Album A", 1001, "EDM", 260));
-        songList.add(new Song(3, "Sample song C", "Artist A", 101, "Sample Album B", 1002, "Hip-Hop/Rap", 260));
-        songList.add(new Song(4, "Sample song D", "Artist B", 102, "Sample Album C", 1003, "Hip-Hop/Rap", 260));
-        songList.add(new Song(5, "Sample song E", "Artist B", 102, "Sample Album C", 1003, "Pop", 260));
-        songList.add(new Song(6, "Sample song F", "Artist B", 102, "Sample Album C", 1003, "Pop", 260));
-        songList.add(new Song(7, "Sample song G", "Artist C", 103, "Sample Album D", 1004, "Pop", 260));
-        songList.add(new Song(8, "Sample song H", "Artist D", 104, "Sample Album E", 1005, "Hip-Hop/Rap", 260));
-        songList.add(new Song(9, "Sample song I", "Artist E", 105, "Sample Album E", 1005, "EDM", 260));
-        songList.add(new Song(10, "Sample song J", "Artist E", 105, "Sample Album F", 1006, "EDM", 260));
+        songList.add(new Song(1, "Sample song A", "Artist A", 101, "Sample Album A", 1001, "Hip-Hop/Rap", 260000));
+        songList.add(new Song(2, "Sample song B", "Artist A", 101, "Sample Album A", 1001, "EDM", 260000));
+        songList.add(new Song(3, "Sample song C", "Artist A", 101, "Sample Album B", 1002, "Hip-Hop/Rap", 260000));
+        songList.add(new Song(4, "Sample song D", "Artist B", 102, "Sample Album C", 1003, "Hip-Hop/Rap", 260000));
+        songList.add(new Song(5, "Sample song E", "Artist B", 102, "Sample Album C", 1003, "Pop", 260000));
+        songList.add(new Song(6, "Sample song F", "Artist B", 102, "Sample Album C", 1003, "Pop", 260000));
+        songList.add(new Song(7, "Sample song G", "Artist C", 103, "Sample Album D", 1004, "Pop", 260000));
+        songList.add(new Song(8, "Sample song H", "Artist D", 104, "Sample Album E", 1005, "Hip-Hop/Rap", 260000));
+        songList.add(new Song(9, "Sample song I", "Artist E", 105, "Sample Album E", 1005, "EDM", 260000));
+        songList.add(new Song(10, "Sample song J", "Artist E", 105, "Sample Album F", 1006, "EDM", 260000));
     }
 
     @Override

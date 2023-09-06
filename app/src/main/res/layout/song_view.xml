@@ -1,40 +1,66 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
-    android:layout_height="78dp"
+    android:layout_height="72dp"
     android:orientation="vertical"
     android:weightSum="1">
 
-    <FrameLayout
+    <RelativeLayout
         android:id="@+id/album_art_frame"
-        android:layout_width="78dp"
+        android:layout_width="88dp"
         android:layout_height="match_parent">
         <ImageView
             android:id="@+id/album_art"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_margin="5dp"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginVertical="8dp"
             android:contentDescription="@string/album_art"
             android:src="@drawable/loner" />
-    </FrameLayout>
+    </RelativeLayout>
 
-    <TextView
-        android:id="@+id/song_name"
+    <RelativeLayout
+        android:id="@+id/text_frame"
+        android:layout_toEndOf="@+id/album_art_frame"
+        android:layout_toStartOf="@id/trailing_supporting_text_frame"
         android:layout_width="match_parent"
-        android:layout_height="25dp"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:singleLine="true"
-        android:gravity="bottom"
-        android:layout_toEndOf="@+id/album_art_frame" />
+        android:layout_height="match_parent" >
+        <TextView
+            android:id="@+id/song_name"
+            android:layout_width="match_parent"
+            android:layout_height="25dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="16dp"
+            android:gravity="bottom"
+            android:singleLine="true"
+            android:textSize="20sp"
+            android:textStyle="bold" />
 
-    <TextView
-        android:id="@+id/song_artist"
-        android:layout_width="match_parent"
-        android:layout_height="25dp"
-        android:textSize="18sp"
-        android:singleLine="true"
-        android:gravity="top"
-        android:layout_below="@+id/song_name"
-        android:layout_toEndOf="@+id/album_art_frame" />
+        <TextView
+            android:id="@+id/song_artist"
+            android:layout_width="match_parent"
+            android:layout_height="25dp"
+            android:layout_below="@+id/song_name"
+            android:layout_marginBottom="8dp"
+            android:layout_marginEnd="16dp"
+            android:gravity="top"
+            android:singleLine="true"
+            android:textSize="18sp" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/trailing_supporting_text_frame"
+        android:layout_alignParentEnd="true"
+        android:layout_width="72dp"
+        android:layout_height="match_parent" >
+        <TextView
+            android:id="@+id/song_duration"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:layout_marginEnd="24dp"
+            android:textSize="18sp"
+            android:gravity="center_vertical"/>
+    </RelativeLayout>
 </RelativeLayout>

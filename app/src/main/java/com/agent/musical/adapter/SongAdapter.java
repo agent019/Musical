@@ -48,12 +48,14 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
         private Song song;
         private TextView nameView;
         private TextView artistView;
+        private TextView durationView;
         private ImageView albumView;
 
         public SongViewHolder(View itemView) {
             super(itemView);
             nameView = (TextView) itemView.findViewById(R.id.song_name);
             artistView = (TextView) itemView.findViewById(R.id.song_artist);
+            durationView = (TextView) itemView.findViewById(R.id.song_duration);
             albumView = (ImageView) itemView.findViewById(R.id.album_art);
             itemView.setClickable(true);
             itemView.setOnClickListener(this);
@@ -62,6 +64,7 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
         public void setSong(Song song) {
             this.song = song;
             this.nameView.setText(song.getName());
+            this.durationView.setText(song.getDurationAsText(context.getResources().getConfiguration().getLocales().get(0)));
             this.artistView.setText(song.getArtist());
 
             final Uri sArtworkUri = Uri.parse("content://media/external/audio/albumart");

@@ -1,5 +1,7 @@
 package com.agent.musical.model;
 
+import java.util.Locale;
+
 /**
  * Created by GLaDOS on 4/19/2016.
  */
@@ -46,5 +48,19 @@ public class Song {
 
     public Long getAlbumId() {
         return this.albumId;
+    }
+
+    public Long getDuration() { return this.duration; }
+
+    public String getDurationAsText(Locale curLocale) {
+        //convert the song duration into string reading hours, mins seconds
+        long hrs = (this.duration / 3600000);
+        long mns = (this.duration / 60000) % 60000;
+        long scs = (this.duration % 60000) / 1000;
+
+        if(hrs == 0)
+            return String.format(curLocale, "%02d:%02d", mns, scs);
+        else
+            return String.format(curLocale,"%02d:%02d:%02d", hrs,  mns, scs);
     }
 }
