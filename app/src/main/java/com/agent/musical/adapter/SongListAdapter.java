@@ -2,6 +2,7 @@ package com.agent.musical.adapter;
 
 import android.content.ContentUris;
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,18 +13,20 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.agent.musical.MainActivity;
+import com.agent.musical.MusicPlayerActivity;
+import com.agent.musical.MusicalService;
 import com.agent.musical.R;
+import com.agent.musical.TimeHelpers;
 import com.agent.musical.model.Song;
 
 import java.util.ArrayList;
 
-public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder> {
-    private ArrayList<Song> songs;
+public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.SongViewHolder> {
+    private ArrayList<Song> songsList;
     private Context context;
 
-    public SongAdapter(Context c, ArrayList<Song> songs) {
-        this.songs = songs;
+    public SongListAdapter(Context c, ArrayList<Song> songsList) {
+        this.songsList = songsList;
         this.context = c;
     }
 
@@ -35,16 +38,29 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
 
     @Override
     public void onBindViewHolder(SongViewHolder holder, int position) {
-        holder.setSong(songs.get(position));
+        holder.setSong(songsList.get(position));
 
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //navigate to another acitivty
+
+                MusicalService.getMediaPlayer().reset();
+                MusicalService.currentSongPosition = holder.getBindingAdapterPosition();
+                Intent intent = new Intent(context, MusicPlayerActivity.class);
+                intent.putExtra("LIST", songsList);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                context.startActivity(intent);
+            }
+        });
     }
 
     @Override
     public int getItemCount() {
-        return songs.size();
+        return songsList.size();
     }
 
-    class SongViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    class SongViewHolder extends RecyclerView.ViewHolder {
         private Song song;
         private TextView nameView;
         private TextView artistView;
@@ -57,25 +73,17 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
             artistView = (TextView) itemView.findViewById(R.id.song_artist);
             durationView = (TextView) itemView.findViewById(R.id.song_duration);
             albumView = (ImageView) itemView.findViewById(R.id.album_art);
-            itemView.setClickable(true);
-            itemView.setOnClickListener(this);
         }
 
         public void setSong(Song song) {
             this.song = song;
             this.nameView.setText(song.getName());
-            this.durationView.setText(song.getDurationAsText(context.getResources().getConfiguration().getLocales().get(0)));
+            this.durationView.setText(TimeHelpers.getDurationAsText(song.getDuration(), context.getResources().getConfiguration().getLocales().get(0)));
             this.artistView.setText(song.getArtist());
 
             final Uri sArtworkUri = Uri.parse("content://media/external/audio/albumart");
             Uri uri = ContentUris.withAppendedId(sArtworkUri, song.getAlbumId());
             // Glide.with(context).load(uri).asBitmap().into(albumView);
-        }
-
-        @Override
-        public void onClick(View v) {
-            // ((MainActivity) context).songPicked(songs, this.getAdapterPosition());
-            ((MainActivity) context).setCurrentSongList(songs);
         }
     }
 }

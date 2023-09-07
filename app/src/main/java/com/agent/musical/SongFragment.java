@@ -11,7 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.agent.musical.adapter.SongAdapter;
+import com.agent.musical.adapter.SongListAdapter;
 import com.agent.musical.model.Song;
 
 import java.util.ArrayList;
@@ -88,7 +88,7 @@ public class SongFragment extends Fragment {
                 layoutManager.getOrientation());
         menu.addItemDecoration(dividerItemDecoration);
 
-        SongAdapter adapter = new SongAdapter(getActivity(), itemList);
+        SongListAdapter adapter = new SongListAdapter(getActivity(), itemList);
         menu.setAdapter(adapter);
 
         return view;

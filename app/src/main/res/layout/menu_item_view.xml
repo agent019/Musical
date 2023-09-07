@@ -33,6 +33,6 @@
             android:layout_height="match_parent"
             android:layout_marginVertical="8dp"
             android:layout_marginEnd="24dp"
-            android:src="@drawable/right"/>
+            android:src="@drawable/chevron_right"/>
     </RelativeLayout>
 </RelativeLayout>

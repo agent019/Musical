@@ -1,11 +1,12 @@
 package com.agent.musical.model;
 
-import java.util.Locale;
+import java.io.Serializable;
 
 /**
  * Created by GLaDOS on 4/19/2016.
  */
-public class Song {
+public class Song implements Serializable {
+    private String uri;
     private long id;
     private String name;
     private String artist;
@@ -15,7 +16,8 @@ public class Song {
     private long artistId;
     private long duration;
 
-    public Song(long id, String name, String artist, long artistId, String album, long albumId, String genre, long duration) {
+    public Song(String uri, long id, String name, String artist, long artistId, String album, long albumId, String genre, long duration) {
+        this.uri = uri;
         this.id = id;
         this.name = name;
         this.artist = artist;
@@ -25,6 +27,8 @@ public class Song {
         this.artistId = artistId;
         this.duration = duration;
     }
+
+    public String getUri() { return this.uri; }
 
     public long getId() {
         return this.id;
@@ -51,16 +55,4 @@ public class Song {
     }
 
     public Long getDuration() { return this.duration; }
-
-    public String getDurationAsText(Locale curLocale) {
-        //convert the song duration into string reading hours, mins seconds
-        long hrs = (this.duration / 3600000);
-        long mns = (this.duration / 60000) % 60000;
-        long scs = (this.duration % 60000) / 1000;
-
-        if(hrs == 0)
-            return String.format(curLocale, "%02d:%02d", mns, scs);
-        else
-            return String.format(curLocale,"%02d:%02d:%02d", hrs,  mns, scs);
-    }
 }
