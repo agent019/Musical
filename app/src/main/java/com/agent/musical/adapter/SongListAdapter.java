@@ -14,7 +14,6 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.agent.musical.MusicPlayerActivity;
-import com.agent.musical.MusicalService;
 import com.agent.musical.R;
 import com.agent.musical.TimeHelpers;
 import com.agent.musical.model.Song;
@@ -43,12 +42,10 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.SongVi
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //navigate to another acitivty
-
-                MusicalService.getMediaPlayer().reset();
-                MusicalService.currentSongPosition = holder.getBindingAdapterPosition();
+                //navigate to another activity
                 Intent intent = new Intent(context, MusicPlayerActivity.class);
                 intent.putExtra("LIST", songsList);
+                intent.putExtra("SONG_POSITION", holder.getBindingAdapterPosition());
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 context.startActivity(intent);
             }

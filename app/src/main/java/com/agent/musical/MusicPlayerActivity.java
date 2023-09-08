@@ -1,12 +1,19 @@
 package com.agent.musical;
 
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.agent.musical.model.Song;
@@ -21,7 +28,10 @@ public class MusicPlayerActivity extends AppCompatActivity {
     ArrayList<Song> songList;
     Song currentSong;
 
-    MediaPlayer mediaPlayer = MusicalService.getMediaPlayer();
+    private MusicalService musicalService;
+    private boolean serviceBound = false;
+
+    // MediaPlayer mediaPlayer = MusicalService.getMediaPlayer();
 
 
     @Override
@@ -45,13 +55,16 @@ public class MusicPlayerActivity extends AppCompatActivity {
         // songPrimary.setSelected(true);
 
         songList = (ArrayList<Song>) getIntent().getSerializableExtra("LIST");
+        currentSong = songList.get((int) getIntent().getSerializableExtra("SONG_POSITION"));
 
         setResourcesWithMusic();
+
+        playAudio(currentSong.getUri());
 
         MusicPlayerActivity.this.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if(mediaPlayer!=null){
+                /*if(mediaPlayer!=null){
                     seekBar.setProgress(mediaPlayer.getCurrentPosition());
                     currentTime.setText(TimeHelpers.getDurationAsText(mediaPlayer.getCurrentPosition(), getApplicationContext().getResources().getConfiguration().getLocales().get(0)));
 
@@ -62,26 +75,76 @@ public class MusicPlayerActivity extends AppCompatActivity {
                     }
 
                 }
-                new Handler().postDelayed(this,100);
+                new Handler().postDelayed(this,100);*/
             }
         });
     }
-    public void setResourcesWithMusic() {
-        currentSong = songList.get(MusicalService.currentSongPosition);
 
+    public void setResourcesWithMusic() {
         songPrimary.setText(currentSong.getName());
         songSecondary.setText(String.format("%s - %s", currentSong.getArtist(), currentSong.getAlbum()));
 
         totalTime.setText(TimeHelpers.getDurationAsText(currentSong.getDuration(), getApplicationContext().getResources().getConfiguration().getLocales().get(0)));
 
-        playPause.setOnClickListener(v-> playPause());
-        nextButton.setOnClickListener(v-> playNextSong());
-        prevButton.setOnClickListener(v-> playPreviousSong());
+        playPause.setOnClickListener(v -> playPause());
+        nextButton.setOnClickListener(v -> playNextSong());
+        prevButton.setOnClickListener(v -> playPreviousSong());
 
         playMusic();
     }
 
-    private void playMusic(){
+    private ServiceConnection serviceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            MusicalService.ServiceBinder binder = (MusicalService.ServiceBinder) service;
+            musicalService = binder.getService();
+            serviceBound = true;
+
+            Toast.makeText(MusicPlayerActivity.this, "Service Bound", Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            serviceBound = false;
+        }
+    };
+
+    private void playAudio(String mediaUri) {
+        if (!serviceBound) {
+            Intent playerIntent = new Intent(this, MusicalService.class);
+            playerIntent.putExtra(MusicalService.MEDIA_INTENT_TAG, mediaUri);
+            startService(playerIntent);
+            bindService(playerIntent, serviceConnection, Context.BIND_AUTO_CREATE);
+        } else {
+            // service is active
+            // send media with BroadcastReceiver
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        savedInstanceState.putBoolean("ServiceState", serviceBound);
+        super.onSaveInstanceState(savedInstanceState);
+    }
+
+    @Override
+    public void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        serviceBound = savedInstanceState.getBoolean("ServiceState");
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (serviceBound) {
+            unbindService(serviceConnection);
+            musicalService.stopSelf();
+        }
+    }
+
+    /***************************************************************************/
+    private void playMusic() {
+        /*
         mediaPlayer.reset();
         try {
             mediaPlayer.setDataSource(currentSong.getUri());
@@ -92,33 +155,39 @@ public class MusicPlayerActivity extends AppCompatActivity {
         } catch (IOException e) {
             e.printStackTrace();
         }
+         */
     }
 
     private void playNextSong() {
-        if(MusicalService.currentSongPosition == songList.size()-1) {
+        /*
+        if (MusicalService.currentSongPosition == songList.size() - 1) {
             MusicalService.currentSongPosition = 0;
         } else {
             MusicalService.currentSongPosition += 1;
         }
         mediaPlayer.reset();
         setResourcesWithMusic();
+         */
     }
 
     private void playPreviousSong() {
-        if(MusicalService.currentSongPosition == 0) {
-            MusicalService.currentSongPosition = songList.size()-1;
+        /*
+        if (MusicalService.currentSongPosition == 0) {
+            MusicalService.currentSongPosition = songList.size() - 1;
         } else {
-            MusicalService.currentSongPosition -=1;
+            MusicalService.currentSongPosition -= 1;
         }
         mediaPlayer.reset();
         setResourcesWithMusic();
+         */
     }
 
     private void playPause() {
-        if(mediaPlayer.isPlaying())
+        /*
+        if (mediaPlayer.isPlaying())
             mediaPlayer.pause();
         else
             mediaPlayer.start();
+         */
     }
-
 }
