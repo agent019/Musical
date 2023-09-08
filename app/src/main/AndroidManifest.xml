@@ -12,6 +12,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Musical"
         tools:targetApi="31">
+        <service
+            android:name=".MusicalService"/>
         <activity
             android:name=".MusicPlayerActivity"
             android:label="@string/title_activity_music_player"/>

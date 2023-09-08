@@ -2,6 +2,7 @@ package com.agent.musical;
 
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.os.Handler;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -55,13 +56,13 @@ public class MusicPlayerActivity extends AppCompatActivity {
                     currentTime.setText(TimeHelpers.getDurationAsText(mediaPlayer.getCurrentPosition(), getApplicationContext().getResources().getConfiguration().getLocales().get(0)));
 
                     if(mediaPlayer.isPlaying()){
-                        playPause.setImageResource(R.drawable.play_arrow);
-                    }else{
                         playPause.setImageResource(R.drawable.pause);
+                    }else{
+                        playPause.setImageResource(R.drawable.play_arrow);
                     }
 
                 }
-                // new Handler().postDelayed(this,100);
+                new Handler().postDelayed(this,100);
             }
         });
     }
