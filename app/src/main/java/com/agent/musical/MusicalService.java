@@ -12,6 +12,8 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 
+import java.io.IOException;
+
 public class MusicalService
         extends Service
         implements MediaPlayer.OnCompletionListener,
@@ -21,44 +23,46 @@ public class MusicalService
     public static final String TAG = "MusicalService";
     public static final String MEDIA_INTENT_TAG = "media";
     private final IBinder serviceBinder = new ServiceBinder();
-    public static MediaPlayer mediaPlayer;
-
-    public static MediaPlayer getMediaPlayer() {
-        if(mediaPlayer == null)
-        {
-            mediaPlayer = new MediaPlayer();
-        }
-        return mediaPlayer;
-    }
-
+    private static MediaPlayer mediaPlayer;
     private AudioManager audioManager;
     private AudioFocusRequest focusRequest;
 
     public String mediaUri;
     private int pausePosition;
-    public static int currentSongPosition = -1;
 
-    private void initMediaPlayer() {
-        mediaPlayer = new MediaPlayer();
+    public void initMediaPlayer() {
+        if(mediaPlayer == null) {
+            mediaPlayer = new MediaPlayer();
+            mediaPlayer.setOnCompletionListener(this);
+            mediaPlayer.setOnPreparedListener(this);
+            mediaPlayer.setOnErrorListener(this);
+        }
         mediaPlayer.reset();
+
+        try {
+            mediaPlayer.setDataSource(mediaUri);
+        } catch (IOException e) {
+            e.printStackTrace();
+            stopSelf();
+        }
         mediaPlayer.prepareAsync();
     }
 
-    private void playMedia() {
+    public void playMedia() {
         if(mediaPlayer == null) return;
         if(!mediaPlayer.isPlaying()) {
             mediaPlayer.start();
         }
     }
 
-    private void stopMedia() {
+    public void stopMedia() {
         if(mediaPlayer == null) return;
         if(mediaPlayer.isPlaying()) {
             mediaPlayer.stop();
         }
     }
 
-    private void pauseMedia() {
+    public void pauseMedia() {
         if(mediaPlayer == null) return;
         if(mediaPlayer.isPlaying()) {
             mediaPlayer.pause();
@@ -66,12 +70,24 @@ public class MusicalService
         }
     }
 
-    private void resumeMedia() {
+    public void resumeMedia() {
         if(mediaPlayer == null) return;
         if (!mediaPlayer.isPlaying()) {
             mediaPlayer.seekTo(pausePosition);
             mediaPlayer.start();
         }
+    }
+
+    public boolean isPlaying() {
+        return mediaPlayer.isPlaying();
+    }
+
+    public int getCurrentPosition() {
+        return mediaPlayer.getCurrentPosition();
+    }
+
+    public void loadMedia(String uri) {
+        mediaUri = uri;
     }
 
     @Nullable
@@ -169,7 +185,7 @@ public class MusicalService
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         try {
-            mediaUri = intent.getExtras().getString(MEDIA_INTENT_TAG);
+            loadMedia(intent.getExtras().getString(MEDIA_INTENT_TAG));
         } catch (NullPointerException e) {
             Log.e(TAG, "Media url not passed to onStartCommand", e);
             stopSelf();

@@ -26,6 +26,7 @@ public class MusicPlayerActivity extends AppCompatActivity {
     SeekBar seekBar;
     ImageView playPause, nextButton, prevButton, albumArt;
     ArrayList<Song> songList;
+    int currentSongIndex;
     Song currentSong;
 
     private MusicalService musicalService;
@@ -55,7 +56,8 @@ public class MusicPlayerActivity extends AppCompatActivity {
         // songPrimary.setSelected(true);
 
         songList = (ArrayList<Song>) getIntent().getSerializableExtra("LIST");
-        currentSong = songList.get((int) getIntent().getSerializableExtra("SONG_POSITION"));
+        currentSongIndex = (int) getIntent().getSerializableExtra("SONG_POSITION");
+        currentSong = songList.get(currentSongIndex);
 
         setResourcesWithMusic();
 
@@ -64,18 +66,18 @@ public class MusicPlayerActivity extends AppCompatActivity {
         MusicPlayerActivity.this.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                /*if(mediaPlayer!=null){
-                    seekBar.setProgress(mediaPlayer.getCurrentPosition());
-                    currentTime.setText(TimeHelpers.getDurationAsText(mediaPlayer.getCurrentPosition(), getApplicationContext().getResources().getConfiguration().getLocales().get(0)));
+                if(musicalService != null){
+                    seekBar.setProgress(musicalService.getCurrentPosition() / 1000);
+                    currentTime.setText(TimeHelpers.getDurationAsText(musicalService.getCurrentPosition(), getApplicationContext().getResources().getConfiguration().getLocales().get(0)));
 
-                    if(mediaPlayer.isPlaying()){
+                    if(musicalService.isPlaying()){
                         playPause.setImageResource(R.drawable.pause);
                     }else{
                         playPause.setImageResource(R.drawable.play_arrow);
                     }
 
                 }
-                new Handler().postDelayed(this,100);*/
+                new Handler().postDelayed(this,100);
             }
         });
     }
@@ -89,8 +91,6 @@ public class MusicPlayerActivity extends AppCompatActivity {
         playPause.setOnClickListener(v -> playPause());
         nextButton.setOnClickListener(v -> playNextSong());
         prevButton.setOnClickListener(v -> playPreviousSong());
-
-        playMusic();
     }
 
     private ServiceConnection serviceConnection = new ServiceConnection() {
@@ -116,8 +116,9 @@ public class MusicPlayerActivity extends AppCompatActivity {
             startService(playerIntent);
             bindService(playerIntent, serviceConnection, Context.BIND_AUTO_CREATE);
         } else {
-            // service is active
-            // send media with BroadcastReceiver
+            musicalService.stopMedia();
+            musicalService.loadMedia(mediaUri);
+            musicalService.initMediaPlayer();
         }
     }
 
@@ -143,51 +144,33 @@ public class MusicPlayerActivity extends AppCompatActivity {
     }
 
     /***************************************************************************/
-    private void playMusic() {
-        /*
-        mediaPlayer.reset();
-        try {
-            mediaPlayer.setDataSource(currentSong.getUri());
-            mediaPlayer.prepare();
-            mediaPlayer.start();
-            seekBar.setProgress(0);
-            seekBar.setMax(mediaPlayer.getDuration());
-        } catch (IOException e) {
-            e.printStackTrace();
+    private void playPause() {
+        if(musicalService.isPlaying()){
+            musicalService.pauseMedia();
+        } else {
+            musicalService.resumeMedia();
         }
-         */
     }
 
     private void playNextSong() {
-        /*
-        if (MusicalService.currentSongPosition == songList.size() - 1) {
-            MusicalService.currentSongPosition = 0;
+        if (currentSongIndex == songList.size() - 1) {
+            currentSongIndex = 0;
         } else {
-            MusicalService.currentSongPosition += 1;
+            currentSongIndex += 1;
         }
-        mediaPlayer.reset();
+        currentSong = songList.get(currentSongIndex);
+        playAudio(currentSong.getUri());
         setResourcesWithMusic();
-         */
     }
 
     private void playPreviousSong() {
-        /*
-        if (MusicalService.currentSongPosition == 0) {
-            MusicalService.currentSongPosition = songList.size() - 1;
+        if (currentSongIndex == 0) {
+            currentSongIndex= songList.size() - 1;
         } else {
-            MusicalService.currentSongPosition -= 1;
+            currentSongIndex -= 1;
         }
-        mediaPlayer.reset();
+        currentSong = songList.get(currentSongIndex);
+        playAudio(currentSong.getUri());
         setResourcesWithMusic();
-         */
-    }
-
-    private void playPause() {
-        /*
-        if (mediaPlayer.isPlaying())
-            mediaPlayer.pause();
-        else
-            mediaPlayer.start();
-         */
     }
 }

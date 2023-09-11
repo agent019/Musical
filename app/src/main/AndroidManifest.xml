@@ -13,7 +13,8 @@
         android:theme="@style/Theme.Musical"
         tools:targetApi="31">
         <service
-            android:name=".MusicalService"/>
+            android:name=".MusicalService"
+            android:label=".MusicalService"/>
         <activity
             android:name=".MusicPlayerActivity"
             android:label="@string/title_activity_music_player"/>
