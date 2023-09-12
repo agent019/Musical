@@ -16,6 +16,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.media3.common.MediaItem;
 import androidx.media3.session.MediaController;
 import androidx.media3.session.SessionToken;
 
@@ -35,23 +36,28 @@ public class MusicPlayerActivity extends AppCompatActivity {
     Song currentSong;
 
     private MediaController player;
+    private ListenableFuture<MediaController> mediaControllerFuture;
 
     @Override
     protected void onStart() {
         super.onStart();
         SessionToken sessionToken = new SessionToken(this, new ComponentName(this, MusicalService.class));
 
-        ListenableFuture<MediaController> mediaControllerFuture = new MediaController.Builder(this, sessionToken).buildAsync();
+        mediaControllerFuture = new MediaController.Builder(this, sessionToken).buildAsync();
 
         mediaControllerFuture.addListener(() -> {
+            try {
                 this.player = mediaControllerFuture.get();
+            } catch (Exception e) {
+                return;
+            }
         }, MoreExecutors.directExecutor());
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        // MediaController.releaseFuture(controllerFuture); ????
+        MediaController.releaseFuture(mediaControllerFuture);
     }
 
     @Override
@@ -72,24 +78,22 @@ public class MusicPlayerActivity extends AppCompatActivity {
         prevButton = findViewById(R.id.previous);
         albumArt = findViewById(R.id.album_art);
 
-        // songPrimary.setSelected(true);
-
         songList = (ArrayList<Song>) getIntent().getSerializableExtra("LIST");
         currentSongIndex = (int) getIntent().getSerializableExtra("SONG_POSITION");
         currentSong = songList.get(currentSongIndex);
 
         setResourcesWithMusic();
 
-        playAudio(currentSong.getUri());
+        // playAudio(currentSong.getUri());
 
         MusicPlayerActivity.this.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if(musicalService != null){
-                    seekBar.setProgress(musicalService.getCurrentPosition() / 1000);
-                    currentTime.setText(TimeHelpers.getDurationAsText(musicalService.getCurrentPosition(), getApplicationContext().getResources().getConfiguration().getLocales().get(0)));
+                if(player != null){
+                    seekBar.setProgress((int) player.getCurrentPosition() / 1000);
+                    currentTime.setText(TimeHelpers.getDurationAsText(player.getCurrentPosition(), getApplicationContext().getResources().getConfiguration().getLocales().get(0)));
 
-                    if(musicalService.isPlaying()){
+                    if(player.isPlaying()){
                         playPause.setImageResource(R.drawable.pause);
                     }else{
                         playPause.setImageResource(R.drawable.play_arrow);
@@ -113,6 +117,10 @@ public class MusicPlayerActivity extends AppCompatActivity {
     }
 
     private void playAudio(String mediaUri) {
+        MediaItem mediaItem = MediaItem.fromUri(mediaUri);
+        player.setMediaItem(mediaItem);
+        player.prepare();
+        player.play();
     }
 
     @Override
@@ -131,6 +139,11 @@ public class MusicPlayerActivity extends AppCompatActivity {
     }
 
     private void playPause() {
+        if(player.isPlaying()) {
+            player.pause();
+        } else {
+            player.play();
+        }
     }
 
     private void playNextSong() {
