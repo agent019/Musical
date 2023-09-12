@@ -11,200 +11,75 @@ import android.os.IBinder;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
+import androidx.media3.common.MediaItem;
+import androidx.media3.exoplayer.ExoPlayer;
+import androidx.media3.session.MediaSession;
+import androidx.media3.session.MediaSessionService;
 
 import java.io.IOException;
 
+/**
+ * <a href="https://developer.android.com/static/images/mediaplayer_state_diagram.gif">...</a>
+ */
 public class MusicalService
-        extends Service
-        implements MediaPlayer.OnCompletionListener,
-            MediaPlayer.OnPreparedListener,
-            MediaPlayer.OnErrorListener,
-            AudioManager.OnAudioFocusChangeListener {
+        extends MediaSessionService {
     public static final String TAG = "MusicalService";
-    public static final String MEDIA_INTENT_TAG = "media";
-    private final IBinder serviceBinder = new ServiceBinder();
-    private static MediaPlayer mediaPlayer;
-    private AudioManager audioManager;
-    private AudioFocusRequest focusRequest;
+    private MediaSession mediaSession = null;
 
-    public String mediaUri;
-    private int pausePosition;
-
-    public void initMediaPlayer() {
-        if(mediaPlayer == null) {
-            mediaPlayer = new MediaPlayer();
-            mediaPlayer.setOnCompletionListener(this);
-            mediaPlayer.setOnPreparedListener(this);
-            mediaPlayer.setOnErrorListener(this);
-        }
-        mediaPlayer.reset();
-
-        try {
-            mediaPlayer.setDataSource(mediaUri);
-        } catch (IOException e) {
-            e.printStackTrace();
-            stopSelf();
-        }
-        mediaPlayer.prepareAsync();
+    public void playMedia(String mediaUri) {
+        loadMedia(mediaUri);
+        mediaSession.getPlayer().play();
     }
 
     public void playMedia() {
-        if(mediaPlayer == null) return;
-        if(!mediaPlayer.isPlaying()) {
-            mediaPlayer.start();
-        }
+        mediaSession.getPlayer().play();
     }
 
     public void stopMedia() {
-        if(mediaPlayer == null) return;
-        if(mediaPlayer.isPlaying()) {
-            mediaPlayer.stop();
-        }
+        mediaSession.getPlayer().stop();
     }
 
     public void pauseMedia() {
-        if(mediaPlayer == null) return;
-        if(mediaPlayer.isPlaying()) {
-            mediaPlayer.pause();
-            pausePosition = mediaPlayer.getCurrentPosition();
-        }
+        mediaSession.getPlayer().pause();
     }
 
     public void resumeMedia() {
-        if(mediaPlayer == null) return;
-        if (!mediaPlayer.isPlaying()) {
-            mediaPlayer.seekTo(pausePosition);
-            mediaPlayer.start();
-        }
+        mediaSession.getPlayer().play();
     }
 
     public boolean isPlaying() {
-        return mediaPlayer.isPlaying();
+        return mediaSession.getPlayer().isPlaying();
     }
 
-    public int getCurrentPosition() {
-        return mediaPlayer.getCurrentPosition();
+    public long getCurrentPosition() {
+        return mediaSession.getPlayer().getCurrentPosition();
     }
 
-    public void loadMedia(String uri) {
-        mediaUri = uri;
+    public void loadMedia(String mediaUri) {
+        MediaItem mediaItem = MediaItem.fromUri(mediaUri);
+        mediaSession.getPlayer().setMediaItem(mediaItem);
+        mediaSession.getPlayer().prepare();
     }
 
     @Nullable
     @Override
-    public IBinder onBind(Intent intent) {
-        return serviceBinder;
-    }
-
-    public class ServiceBinder extends Binder {
-        public MusicalService getService() {
-            return MusicalService.this;
-        }
+    public MediaSession onGetSession(MediaSession.ControllerInfo controllerInfo) {
+        return mediaSession;
     }
 
     @Override
-    public void onCompletion(MediaPlayer mp) {
-        stopMedia();
-        stopSelf();
-    }
-
-    @Override
-    public void onPrepared(MediaPlayer mp) {
-        playMedia();
-    }
-
-    /**
-     * Automatically invoked when an error occurs in media playback.
-     * @param mp
-     * @param what
-     * @param extra
-     * @return
-     */
-    @Override
-    public boolean onError(MediaPlayer mp, int what, int extra) {
-        switch (what) {
-            case MediaPlayer.MEDIA_ERROR_NOT_VALID_FOR_PROGRESSIVE_PLAYBACK:
-                Log.d(TAG, "Media Error: Not valid for progressive playback - " + extra);
-                break;
-            case MediaPlayer.MEDIA_ERROR_SERVER_DIED:
-                Log.d(TAG, "Media Error: Server Died - " + extra);
-                break;
-            case MediaPlayer.MEDIA_ERROR_UNKNOWN:
-                Log.d(TAG, "Media Error: Unknown - " + extra);
-                break;
-        }
-        return false;
-    }
-
-    /**
-     * Automatically invoked when focus changes.
-     * @param focusState audio focus change state
-     */
-    @Override
-    public void onAudioFocusChange(int focusState) {
-        switch (focusState) {
-            case AudioManager.AUDIOFOCUS_GAIN:
-                // Focus is given back to this service
-                if (mediaPlayer == null) initMediaPlayer();
-                else if (!mediaPlayer.isPlaying()) mediaPlayer.start();
-                break;
-            case AudioManager.AUDIOFOCUS_LOSS:
-                // Focus lost for an unspecified amount of time
-                if (mediaPlayer.isPlaying()) mediaPlayer.stop();
-                mediaPlayer.release();
-                mediaPlayer = null;
-                break;
-            case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
-                // Focus lost for a short time
-                if (mediaPlayer.isPlaying()) mediaPlayer.pause();
-                break;
-            case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
-                // Focus lost for a short time but don't need to stop
-                if (mediaPlayer.isPlaying()) mediaPlayer.setVolume(0.1f, 0.1f);
-                break;
-        }
-    }
-
-    private boolean requestAudioFocus() {
-        audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        focusRequest = new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN).build();
-        int result = audioManager.requestAudioFocus(focusRequest);
-        if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
-            //Focus gained
-            return true;
-        }
-        //Could not gain focus
-        return false;
-    }
-
-    private boolean removeAudioFocus() {
-        return AudioManager.AUDIOFOCUS_REQUEST_GRANTED ==
-                audioManager.abandonAudioFocusRequest(focusRequest);
-    }
-
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        try {
-            loadMedia(intent.getExtras().getString(MEDIA_INTENT_TAG));
-        } catch (NullPointerException e) {
-            Log.e(TAG, "Media url not passed to onStartCommand", e);
-            stopSelf();
-        }
-
-        if(mediaUri != null && !mediaUri.isEmpty()) {
-            initMediaPlayer();
-        }
-
-        return super.onStartCommand(intent, flags, startId);
+    public void onCreate() {
+        super.onCreate();
+        ExoPlayer player = new ExoPlayer.Builder(this).build();
+        mediaSession = new MediaSession.Builder(this, player).build();
+        return;
     }
 
     @Override
     public void onDestroy() {
+        mediaSession.getPlayer().release();
+        mediaSession.release();
+        mediaSession = null;
         super.onDestroy();
-        if(mediaPlayer != null) {
-            stopMedia();
-            mediaPlayer.release();
-        }
-        removeAudioFocus();
     }
 }

@@ -8,6 +8,7 @@ import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.provider.MediaStore;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -15,8 +16,12 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.media3.session.MediaController;
+import androidx.media3.session.SessionToken;
 
 import com.agent.musical.model.Song;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.MoreExecutors;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -29,11 +34,25 @@ public class MusicPlayerActivity extends AppCompatActivity {
     int currentSongIndex;
     Song currentSong;
 
-    private MusicalService musicalService;
-    private boolean serviceBound = false;
+    private MediaController player;
 
-    // MediaPlayer mediaPlayer = MusicalService.getMediaPlayer();
+    @Override
+    protected void onStart() {
+        super.onStart();
+        SessionToken sessionToken = new SessionToken(this, new ComponentName(this, MusicalService.class));
 
+        ListenableFuture<MediaController> mediaControllerFuture = new MediaController.Builder(this, sessionToken).buildAsync();
+
+        mediaControllerFuture.addListener(() -> {
+                this.player = mediaControllerFuture.get();
+        }, MoreExecutors.directExecutor());
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        // MediaController.releaseFuture(controllerFuture); ????
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,63 +112,25 @@ public class MusicPlayerActivity extends AppCompatActivity {
         prevButton.setOnClickListener(v -> playPreviousSong());
     }
 
-    private ServiceConnection serviceConnection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            MusicalService.ServiceBinder binder = (MusicalService.ServiceBinder) service;
-            musicalService = binder.getService();
-            serviceBound = true;
-
-            Toast.makeText(MusicPlayerActivity.this, "Service Bound", Toast.LENGTH_SHORT).show();
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            serviceBound = false;
-        }
-    };
-
     private void playAudio(String mediaUri) {
-        if (!serviceBound) {
-            Intent playerIntent = new Intent(this, MusicalService.class);
-            playerIntent.putExtra(MusicalService.MEDIA_INTENT_TAG, mediaUri);
-            startService(playerIntent);
-            bindService(playerIntent, serviceConnection, Context.BIND_AUTO_CREATE);
-        } else {
-            musicalService.stopMedia();
-            musicalService.loadMedia(mediaUri);
-            musicalService.initMediaPlayer();
-        }
     }
 
     @Override
     public void onSaveInstanceState(Bundle savedInstanceState) {
-        savedInstanceState.putBoolean("ServiceState", serviceBound);
         super.onSaveInstanceState(savedInstanceState);
     }
 
     @Override
     public void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-        serviceBound = savedInstanceState.getBoolean("ServiceState");
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (serviceBound) {
-            unbindService(serviceConnection);
-            musicalService.stopSelf();
-        }
     }
 
-    /***************************************************************************/
     private void playPause() {
-        if(musicalService.isPlaying()){
-            musicalService.pauseMedia();
-        } else {
-            musicalService.resumeMedia();
-        }
     }
 
     private void playNextSong() {
