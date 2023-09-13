@@ -1,18 +1,11 @@
 package com.agent.musical;
 
 import android.content.ComponentName;
-import android.content.Context;
-import android.content.Intent;
-import android.content.ServiceConnection;
-import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.IBinder;
-import android.provider.MediaStore;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -24,7 +17,6 @@ import com.agent.musical.model.Song;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
 public class MusicPlayerActivity extends AppCompatActivity {
@@ -48,6 +40,7 @@ public class MusicPlayerActivity extends AppCompatActivity {
         mediaControllerFuture.addListener(() -> {
             try {
                 this.player = mediaControllerFuture.get();
+                playAudio(currentSong.getUri());
             } catch (Exception e) {
                 return;
             }
@@ -84,13 +77,14 @@ public class MusicPlayerActivity extends AppCompatActivity {
 
         setResourcesWithMusic();
 
-        // playAudio(currentSong.getUri());
 
         MusicPlayerActivity.this.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 if(player != null){
-                    seekBar.setProgress((int) player.getCurrentPosition() / 1000);
+                    long curTime = player.getCurrentPosition();
+                    long totalTime = player.getDuration();
+                    seekBar.setProgress((int) ((curTime * 100)/ totalTime));
                     currentTime.setText(TimeHelpers.getDurationAsText(player.getCurrentPosition(), getApplicationContext().getResources().getConfiguration().getLocales().get(0)));
 
                     if(player.isPlaying()){

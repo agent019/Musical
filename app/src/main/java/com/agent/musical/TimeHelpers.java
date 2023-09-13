@@ -5,7 +5,7 @@ import java.util.Locale;
 public class TimeHelpers {
 
     public static String getDurationAsText(long duration, Locale curLocale) {
-        //convert the song duration into string reading hours, mins seconds
+        // convert the song duration into string reading hours, mins, seconds
         long hrs = (duration / 3600000);
         long mns = (duration / 60000) % 60000;
         long scs = (duration % 60000) / 1000;
