@@ -1,5 +1,6 @@
 package com.agent.musical;
 
+import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -15,21 +16,24 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.media3.session.MediaController;
+import androidx.media3.session.SessionToken;
 import androidx.navigation.ui.AppBarConfiguration;
 
 import com.agent.musical.model.Song;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.MoreExecutors;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
-public class MainActivity extends AppCompatActivity /*implements MediaController.MediaPlayerControl*/ {
+public class MainActivity extends AppCompatActivity {
 
     private FragmentManager fm;
     public static final String TAG = "MainActivity";
-    private AppBarConfiguration appBarConfiguration;
-    public ArrayList<Song> songList;
-    public ArrayList<Song> currentSongList = null;
+    private MediaController player;
+    private ListenableFuture<MediaController> mediaControllerFuture;
 
     private static final int MY_PERMISSIONS_REQUEST_READ_MEDIA_AUDIO = 0;
     public static final int ALL = -1;
@@ -52,103 +56,13 @@ public class MainActivity extends AppCompatActivity /*implements MediaController
         fragmentTransaction.add(R.id.main_layout, frag);
         fragmentTransaction.commit();
 
-        songList = new ArrayList<Song>();
         if (ContextCompat.checkSelfPermission(this, "android.permission.READ_MEDIA_AUDIO") != PackageManager.PERMISSION_GRANTED) {
             Log.i(TAG, "Requesting permissions for audio media.");
             ActivityCompat.requestPermissions(this, new String[]{ "android.permission.READ_MEDIA_AUDIO" }, MY_PERMISSIONS_REQUEST_READ_MEDIA_AUDIO);
         } else{
             Log.i(TAG, "Audio permissions already approved.");
-            populateSongList();
+            startMediaSessionService();
         }
-
-        Collections.sort(songList, new Comparator<Song>() {
-            public int compare(Song a, Song b) {
-                return a.getName().compareTo(b.getName());
-            }
-        });
-    }
-
-    public ArrayList<Song> getSongList() {
-        return songList;
-    }
-
-    public void setCurrentSongList(ArrayList<Song> curSongList) {
-        this.currentSongList = curSongList;
-    }
-
-    public ArrayList<Song> getCurrentSongList() {
-        return currentSongList;
-    }
-
-    public void swapFragment(Fragment f) {
-        FragmentTransaction fragmentTransaction = fm.beginTransaction();
-        fragmentTransaction.replace(R.id.main_layout, f);
-        fragmentTransaction.addToBackStack(f.getClass().getName());
-        fragmentTransaction.commit();
-    }
-
-    public void populateSongList() {
-        //Retrieve song info
-        ContentResolver musicResolver = getContentResolver();
-        Cursor musicCursor = musicResolver.query(android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, null, null, null, null);
-        if (musicCursor != null && musicCursor.moveToFirst()) {
-            //get columns
-            int uriColumn = musicCursor.getColumnIndex(MediaStore.Audio.Media.DATA);
-            int albumColumn = musicCursor.getColumnIndex(MediaStore.Audio.Media.ALBUM);
-            int albumIdColumn = musicCursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID);
-            int artistColumn = musicCursor.getColumnIndex(MediaStore.Audio.Media.ARTIST);
-            int artistIdColumn = musicCursor.getColumnIndex(MediaStore.Audio.Media.ARTIST_ID);
-            int durationColumn = musicCursor.getColumnIndex(MediaStore.Audio.Media.DURATION);
-            int isMusicColumn = musicCursor.getColumnIndex(MediaStore.Audio.Media.IS_MUSIC);
-            int titleColumn = musicCursor.getColumnIndex(MediaStore.Audio.Media.TITLE);
-            int idColumn = musicCursor.getColumnIndex(MediaStore.Audio.Media._ID);
-            //add songs to list
-            do {
-                if(musicCursor.getInt(isMusicColumn) != 0) {
-                    String uri = musicCursor.getString(uriColumn);
-                    String album = musicCursor.getString(albumColumn);
-                    Long albumId = musicCursor.getLong(albumIdColumn);
-                    String artist = musicCursor.getString(artistColumn);
-                    Long artistId = musicCursor.getLong(artistIdColumn);
-                    Long duration = musicCursor.getLong(durationColumn);
-                    long id = musicCursor.getLong(idColumn);
-                    String name = musicCursor.getString(titleColumn);
-
-                    if(artist.equals("<unknown>"))
-                        artist = "Unknown Artist";
-
-                    int musicId = Integer.parseInt(musicCursor.getString(idColumn));
-
-                    Uri genreUri = MediaStore.Audio.Genres.getContentUriForAudioId("external", musicId);
-                    Cursor genresCursor = musicResolver.query(genreUri,
-                            null, null, null, null);
-                    int genre_column_index = genresCursor.getColumnIndexOrThrow(MediaStore.Audio.Genres.NAME);
-
-                    String genre = "Unknown Genre";
-                    if (genresCursor.moveToFirst()) {
-                        do {
-                            genre = genresCursor.getString(genre_column_index) + " ";
-                        } while (genresCursor.moveToNext());
-                    }
-                    genresCursor.close();
-
-                    songList.add(new Song(uri, id, name, artist, artistId, album, albumId, genre, duration));
-                }
-            }
-            while (musicCursor.moveToNext());
-            musicCursor.close();
-        }
-
-        /*songList.add(new Song("uri", 1, "Sample song A", "Artist A", 101, "Sample Album A", 1001, "Hip-Hop/Rap", 260000));
-        songList.add(new Song("uri", 2, "Sample song B", "Artist A", 101, "Sample Album A", 1001, "EDM", 260000));
-        songList.add(new Song("uri", 3, "Sample song C", "Artist A", 101, "Sample Album B", 1002, "Hip-Hop/Rap", 260000));
-        songList.add(new Song("uri", 4, "Sample song D", "Artist B", 102, "Sample Album C", 1003, "Hip-Hop/Rap", 260000));
-        songList.add(new Song("uri", 5, "Sample song E", "Artist B", 102, "Sample Album C", 1003, "Pop", 260000));
-        songList.add(new Song("uri", 6, "Sample song F", "Artist B", 102, "Sample Album C", 1003, "Pop", 260000));
-        songList.add(new Song("uri", 7, "Sample song G", "Artist C", 103, "Sample Album D", 1004, "Pop", 260000));
-        songList.add(new Song("uri", 8, "Sample song H", "Artist D", 104, "Sample Album E", 1005, "Hip-Hop/Rap", 260000));
-        songList.add(new Song("uri", 9, "Sample song I", "Artist E", 105, "Sample Album E", 1005, "EDM", 260000));
-        songList.add(new Song("uri", 10, "Sample song J", "Artist E", 105, "Sample Album F", 1006, "EDM", 260000));*/
     }
 
     @Override
@@ -156,7 +70,7 @@ public class MainActivity extends AppCompatActivity /*implements MediaController
         switch (requestCode) {
             case MY_PERMISSIONS_REQUEST_READ_MEDIA_AUDIO: {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    populateSongList();
+                    startMediaSessionService();
                 } else {
                     Log.i(TAG, "length: " + grantResults.length + " and result: " + grantResults[0]);
                     // todo: snack-bar?
@@ -167,6 +81,38 @@ public class MainActivity extends AppCompatActivity /*implements MediaController
                 super.onRequestPermissionsResult(requestCode, permissions, grantResults);
             }
         }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        MediaController.releaseFuture(mediaControllerFuture);
+    }
+
+    public void startMediaSessionService() {
+        SessionToken sessionToken = new SessionToken(this, new ComponentName(this, MusicalService.class));
+
+        mediaControllerFuture = new MediaController.Builder(this, sessionToken).buildAsync();
+
+        mediaControllerFuture.addListener(() -> {
+            try {
+                this.player = mediaControllerFuture.get();
+            } catch (Exception e) {
+                return;
+            }
+        }, MoreExecutors.directExecutor());
+    }
+
+    public void swapFragment(Fragment f) {
+        FragmentTransaction fragmentTransaction = fm.beginTransaction();
+        fragmentTransaction.replace(R.id.main_layout, f);
+        fragmentTransaction.addToBackStack(f.getClass().getName());
+        fragmentTransaction.commit();
     }
 
     @Override

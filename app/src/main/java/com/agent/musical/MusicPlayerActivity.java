@@ -27,31 +27,7 @@ public class MusicPlayerActivity extends AppCompatActivity {
     int currentSongIndex;
     Song currentSong;
 
-    private MediaController player;
-    private ListenableFuture<MediaController> mediaControllerFuture;
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        SessionToken sessionToken = new SessionToken(this, new ComponentName(this, MusicalService.class));
-
-        mediaControllerFuture = new MediaController.Builder(this, sessionToken).buildAsync();
-
-        mediaControllerFuture.addListener(() -> {
-            try {
-                this.player = mediaControllerFuture.get();
-                playAudio(currentSong.getUri());
-            } catch (Exception e) {
-                return;
-            }
-        }, MoreExecutors.directExecutor());
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        MediaController.releaseFuture(mediaControllerFuture);
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
