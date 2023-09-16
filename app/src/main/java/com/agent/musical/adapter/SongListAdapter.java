@@ -2,7 +2,6 @@ package com.agent.musical.adapter;
 
 import android.content.ContentUris;
 import android.content.Context;
-import android.content.Intent;
 import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,22 +12,22 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.agent.musical.MusicPlayerActivity;
 import com.agent.musical.R;
 import com.agent.musical.TimeHelpers;
 import com.agent.musical.model.Song;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.SongViewHolder> {
-    private ArrayList<Song> songsList;
+    private List<Song> songsList;
     private Context context;
 
-    public SongListAdapter(Context c, ArrayList<Song> songsList) {
+    public SongListAdapter(Context c, List<Song> songsList) {
         this.songsList = songsList;
         this.context = c;
     }
 
+    @NonNull
     @Override
     public SongViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.song_view, parent, false);
@@ -42,12 +41,14 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.SongVi
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // TODO: we're gonna switch to a fragment here
+
                 //navigate to another activity
-                Intent intent = new Intent(context, MusicPlayerActivity.class);
+                /*Intent intent = new Intent(context, MusicPlayerActivity.class);
                 intent.putExtra("LIST", songsList);
                 intent.putExtra("SONG_POSITION", holder.getBindingAdapterPosition());
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                context.startActivity(intent);
+                context.startActivity(intent);*/
             }
         });
     }

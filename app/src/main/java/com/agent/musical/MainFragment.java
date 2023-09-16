@@ -68,7 +68,7 @@ public class MainFragment extends Fragment {
     }
 
     private void createMenuItemList() {
-        Fragment songFrag = SongFragment.newInstance(MainActivity.ALL, null);
+        Fragment songFrag = SongListFragment.newInstance(MainActivity.ALL, null);
         MenuItem song = new MenuItem("Songs", songFrag);
         itemList.add(song);
         Fragment artistFrag = FilteredMenuFragment.newInstance(MainActivity.ARTISTS, null);

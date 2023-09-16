@@ -15,18 +15,19 @@ import com.agent.musical.adapter.SongListAdapter;
 import com.agent.musical.model.Song;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A simple {@link Fragment} subclass.
- * Use the {@link SongFragment#newInstance} factory method to
+ * Use the {@link SongListFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class SongFragment extends Fragment {
-    private ArrayList<Song> itemList;
+public class SongListFragment extends Fragment {
+    private List<Song> itemList;
     private int type;
     private String filter;
 
-    public SongFragment() {
+    public SongListFragment() {
         // Required empty public constructor
     }
 
@@ -38,8 +39,8 @@ public class SongFragment extends Fragment {
      * @param filter Parameter 2.
      * @return A new instance of fragment SongFragment.
      */
-    public static SongFragment newInstance(int type, String filter) {
-        SongFragment fragment = new SongFragment();
+    public static SongListFragment newInstance(int type, String filter) {
+        SongListFragment fragment = new SongListFragment();
         Bundle b = new Bundle(2);
         b.putInt("type", type);
         b.putString("filter", filter);
@@ -54,7 +55,7 @@ public class SongFragment extends Fragment {
         Bundle b = getArguments();
         type = b.getInt("type");
         filter = b.getString("filter");
-        ArrayList<Song> fullList = activity.getSongList();
+        List<Song> fullList = activity.getSongList();
         if(filter != null) {
             itemList = new ArrayList<Song>();
             for (int i = 0; i < fullList.size(); i++) {

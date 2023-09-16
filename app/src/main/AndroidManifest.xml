@@ -16,9 +16,6 @@
             android:name=".MusicalService"
             android:label=".MusicalService"/>
         <activity
-            android:name=".MusicPlayerActivity"
-            android:label="@string/title_activity_music_player"/>
-        <activity
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/title_activity_main"

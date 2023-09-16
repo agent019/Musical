@@ -61,7 +61,7 @@ public class FilteredMenuFragment extends Fragment {
     //TODO Optimize this, it sucks.
     private void createMenuItemList() {
         MainActivity activity = (MainActivity) getActivity();
-        ArrayList<Song> songs = activity.getSongList();
+        List<Song> songs = activity.getSongList();
 
         HashSet<String> items = new HashSet<String>();
         for(int i = 0; i < songs.size(); i++) {
@@ -77,7 +77,7 @@ public class FilteredMenuFragment extends Fragment {
         }
 
         for(String s : items) {
-            SongFragment frag = SongFragment.newInstance(type, s);
+            SongListFragment frag = SongListFragment.newInstance(type, s);
             MenuItem i = new MenuItem(s, frag);
             itemList.add(i);
         }
