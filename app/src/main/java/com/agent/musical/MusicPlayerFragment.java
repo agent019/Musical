@@ -78,6 +78,8 @@ public class MusicPlayerFragment extends Fragment {
         nextButton = view.findViewById(R.id.next);
         prevButton = view.findViewById(R.id.previous);
         albumArt = view.findViewById(R.id.album_art);
+
+        return view;
     }
 
     public void setResourcesWithMusic() {
