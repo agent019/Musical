@@ -8,6 +8,7 @@ import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
 import com.agent.musical.model.Song;
@@ -18,9 +19,8 @@ public class MusicPlayerFragment extends Fragment {
     TextView songPrimary, songSecondary, currentTime, totalTime;
     SeekBar seekBar;
     ImageView playPause, nextButton, prevButton, albumArt;
-    ArrayList<Song> songList;
-    int currentSongIndex;
     Song currentSong;
+    MainActivity activity;
 
     /**
      * Use this factory method to create a new instance of
@@ -37,6 +37,8 @@ public class MusicPlayerFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        activity = (MainActivity) getActivity();
+        currentSong = activity.getCurrentSong();
         /*songList = (ArrayList<Song>) getIntent().getSerializableExtra("LIST");
         currentSongIndex = (int) getIntent().getSerializableExtra("SONG_POSITION");
         currentSong = songList.get(currentSongIndex);
@@ -63,7 +65,7 @@ public class MusicPlayerFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_music_player, container, false);
 
@@ -79,6 +81,8 @@ public class MusicPlayerFragment extends Fragment {
         prevButton = view.findViewById(R.id.previous);
         albumArt = view.findViewById(R.id.album_art);
 
+        setResourcesWithMusic();
+
         return view;
     }
 
@@ -86,7 +90,7 @@ public class MusicPlayerFragment extends Fragment {
         songPrimary.setText(currentSong.getName());
         songSecondary.setText(String.format("%s - %s", currentSong.getArtist(), currentSong.getAlbum()));
 
-        // totalTime.setText(TimeHelpers.getDurationAsText(currentSong.getDuration(), getApplicationContext().getResources().getConfiguration().getLocales().get(0)));
+        totalTime.setText(TimeHelpers.getDurationAsText(currentSong.getDuration(), getActivity().getApplicationContext().getResources().getConfiguration().getLocales().get(0)));
 
         playPause.setOnClickListener(v -> playPause());
         nextButton.setOnClickListener(v -> playNextSong());
@@ -95,14 +99,15 @@ public class MusicPlayerFragment extends Fragment {
 
     /***************************************************************************/
     private void playPause() {
-        /*if(musicalService.isPlaying()){
-            musicalService.pauseMedia();
+        if(activity.isPlaying()){
+            activity.pause();
         } else {
-            musicalService.resumeMedia();
-        }*/
+            activity.play();
+        }
     }
 
     private void playNextSong() {
+        activity.playNext();
         /*if (currentSongIndex == songList.size() - 1) {
             currentSongIndex = 0;
         } else {
@@ -114,6 +119,7 @@ public class MusicPlayerFragment extends Fragment {
     }
 
     private void playPreviousSong() {
+        activity.playPrev();
         /*if (currentSongIndex == 0) {
             currentSongIndex= songList.size() - 1;
         } else {

@@ -1,16 +1,13 @@
 package com.agent.musical;
 
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.provider.MediaStore;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -21,13 +18,10 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
-import androidx.navigation.ui.AppBarConfiguration;
 
 import com.agent.musical.model.Song;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
+import java.io.IOException;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -51,13 +45,7 @@ public class MainActivity extends AppCompatActivity {
 
         // TODO - Consider ViewBinding instead of calling by id here?
         // https://developer.android.com/topic/libraries/view-binding
-        setContentView(R.layout.main_menu);
-
-        fm = getSupportFragmentManager();
-        Fragment frag = MainFragment.newInstance();
-        FragmentTransaction fragmentTransaction = fm.beginTransaction();
-        fragmentTransaction.add(R.id.main_layout, frag);
-        fragmentTransaction.commit();
+        setContentView(R.layout.main_layout);
 
         if (ContextCompat.checkSelfPermission(this, "android.permission.READ_MEDIA_AUDIO") != PackageManager.PERMISSION_GRANTED) {
             Log.i(TAG, "Requesting permissions for audio media.");
@@ -99,12 +87,65 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    public boolean isPlaying() {
+        return musicalService.isPlaying();
+    }
+
+    public void play() {
+        musicalService.playMedia();
+    }
+
+    public void pause() {
+        musicalService.pauseMedia();
+    }
+
+    public void stop() {
+        musicalService.stopMedia();
+    }
+
+    public void playNext() {
+        // TODO;
+    }
+
+    public void playPrev() {
+        // TODO;
+    }
+
+    private final BroadcastReceiver receiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, @NonNull Intent intent) {
+            String action = intent.getAction();
+            if (action.equals(MusicalService.PLAY_AUDIO_ACTION_NAME)) {
+                long songId = intent.getLongExtra(MusicalService.ID_TAG, -1);
+                if(songId != -1) {
+                    Song toPlay = musicalService.getSongList().stream().filter(x -> x.getId() == songId).findFirst().orElse(null);
+                    if (toPlay != null) {
+                        // TODO: create and switch to new fragment with current song playing
+                    } else {
+                        Log.d(TAG, "Couldn't find song with id " + songId + " in song list.");
+                    }
+                } else {
+                    Log.d(TAG, "Song id not included in intent to play song.");
+                }
+            }
+        }
+    };
+
+
     private ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             MusicalService.ServiceBinder binder = (MusicalService.ServiceBinder) service;
             musicalService = binder.getService();
             serviceBound = true;
+
+            // It's probably a bad idea to load UI after a service has done background processing
+            fm = getSupportFragmentManager();
+            Fragment frag = SongListFragment.newInstance(ALL, null);
+            fm.beginTransaction()
+                    .add(R.id.main_layout, frag)
+                    .setReorderingAllowed(true)
+                    .commit();
 
             Toast.makeText(MainActivity.this, "Service Bound", Toast.LENGTH_SHORT).show();
         }

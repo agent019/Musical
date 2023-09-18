@@ -1,9 +1,12 @@
 package com.agent.musical;
 
+import android.annotation.SuppressLint;
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.media.AudioFocusRequest;
 import android.media.AudioManager;
@@ -14,6 +17,7 @@ import android.os.IBinder;
 import android.provider.MediaStore;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.agent.musical.model.Song;
@@ -32,6 +36,8 @@ public class MusicalService
             AudioManager.OnAudioFocusChangeListener {
     public static final String TAG = "MusicalService";
     public static final String MEDIA_INTENT_TAG = "media";
+    public static final String PLAY_AUDIO_ACTION_NAME = "com.agent.musical.play";
+    public static final String ID_TAG = "id";
     private final IBinder serviceBinder = new ServiceBinder();
     private static MediaPlayer mediaPlayer;
     private AudioManager audioManager;
@@ -52,14 +58,6 @@ public class MusicalService
         mediaPlayer.reset();
 
         populateSongList();
-
-        /*try {
-            mediaPlayer.setDataSource(mediaUri);
-        } catch (IOException e) {
-            e.printStackTrace();
-            stopSelf();
-        }*/
-        // mediaPlayer.prepareAsync();
     }
 
     public void playMedia() {
@@ -166,18 +164,35 @@ public class MusicalService
                 return a.getName().compareTo(b.getName());
             }
         });
-
-        /*songList.add(new Song("uri", 1, "Sample song A", "Artist A", 101, "Sample Album A", 1001, "Hip-Hop/Rap", 260000));
-        songList.add(new Song("uri", 2, "Sample song B", "Artist A", 101, "Sample Album A", 1001, "EDM", 260000));
-        songList.add(new Song("uri", 3, "Sample song C", "Artist A", 101, "Sample Album B", 1002, "Hip-Hop/Rap", 260000));
-        songList.add(new Song("uri", 4, "Sample song D", "Artist B", 102, "Sample Album C", 1003, "Hip-Hop/Rap", 260000));
-        songList.add(new Song("uri", 5, "Sample song E", "Artist B", 102, "Sample Album C", 1003, "Pop", 260000));
-        songList.add(new Song("uri", 6, "Sample song F", "Artist B", 102, "Sample Album C", 1003, "Pop", 260000));
-        songList.add(new Song("uri", 7, "Sample song G", "Artist C", 103, "Sample Album D", 1004, "Pop", 260000));
-        songList.add(new Song("uri", 8, "Sample song H", "Artist D", 104, "Sample Album E", 1005, "Hip-Hop/Rap", 260000));
-        songList.add(new Song("uri", 9, "Sample song I", "Artist E", 105, "Sample Album E", 1005, "EDM", 260000));
-        songList.add(new Song("uri", 10, "Sample song J", "Artist E", 105, "Sample Album F", 1006, "EDM", 260000));*/
     }
+
+    private final BroadcastReceiver receiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, @NonNull Intent intent) {
+            String action = intent.getAction();
+            if (action.equals(PLAY_AUDIO_ACTION_NAME)) {
+                long songId = intent.getLongExtra(ID_TAG, -1);
+                if(songId != -1) {
+                    Song toPlay = songList.stream().filter(x -> x.getId() == songId).findFirst().orElse(null);
+                    if (toPlay != null) {
+                        try {
+                            mediaPlayer.reset();
+                            mediaPlayer.setDataSource(toPlay.getUri());
+                            mediaPlayer.prepareAsync();
+                            nowPlaying = toPlay;
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            stopSelf();
+                        }
+                    } else {
+                        Log.d(TAG, "Couldn't find song with id " + songId + " in song list.");
+                    }
+                } else {
+                    Log.d(TAG, "Song id not included in intent to play song.");
+                }
+            }
+        }
+    };
 
     @Nullable
     @Override
@@ -289,6 +304,13 @@ public class MusicalService
     }
 
     @Override
+    public void onCreate() {
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(PLAY_AUDIO_ACTION_NAME);
+        registerReceiver(receiver, filter, RECEIVER_NOT_EXPORTED);
+    }
+
+    @Override
     public void onDestroy() {
         super.onDestroy();
         if(mediaPlayer != null) {
@@ -296,5 +318,6 @@ public class MusicalService
             mediaPlayer.release();
         }
         removeAudioFocus();
+        unregisterReceiver(receiver);
     }
 }

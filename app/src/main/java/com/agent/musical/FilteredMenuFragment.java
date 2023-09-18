@@ -58,7 +58,6 @@ public class FilteredMenuFragment extends Fragment {
         createMenuItemList();
     }
 
-    //TODO Optimize this, it sucks.
     private void createMenuItemList() {
         MainActivity activity = (MainActivity) getActivity();
         List<Song> songs = activity.getSongList();
@@ -86,7 +85,6 @@ public class FilteredMenuFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_filtered_menu, container, false);
         RecyclerView menu = (RecyclerView) view.findViewById(R.id.main_recycler_view);
         menu.setHasFixedSize(true);

@@ -78,7 +78,7 @@ public class SongListFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_song, container, false);
+        View view = inflater.inflate(R.layout.fragment_song_list, container, false);
         RecyclerView menu = (RecyclerView) view.findViewById(R.id.song_recycler_view);
         menu.setHasFixedSize(true);
 

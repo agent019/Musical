@@ -2,7 +2,9 @@ package com.agent.musical.adapter;
 
 import android.content.ContentUris;
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +14,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.agent.musical.MusicalService;
 import com.agent.musical.R;
 import com.agent.musical.TimeHelpers;
 import com.agent.musical.model.Song;
@@ -30,7 +33,7 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.SongVi
     @NonNull
     @Override
     public SongViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.song_view, parent, false);
+        View view = LayoutInflater.from(context).inflate(R.layout.song_view, parent, false);
         return new SongViewHolder(view);
     }
 
@@ -38,18 +41,12 @@ public class SongListAdapter extends RecyclerView.Adapter<SongListAdapter.SongVi
     public void onBindViewHolder(SongViewHolder holder, int position) {
         holder.setSong(songsList.get(position));
 
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // TODO: we're gonna switch to a fragment here
-
-                //navigate to another activity
-                /*Intent intent = new Intent(context, MusicPlayerActivity.class);
-                intent.putExtra("LIST", songsList);
-                intent.putExtra("SONG_POSITION", holder.getBindingAdapterPosition());
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                context.startActivity(intent);*/
-            }
+        holder.itemView.setOnClickListener(v -> {
+            Song clickedSong = songsList.get(holder.getBindingAdapterPosition());
+            Intent intent = new Intent();
+            intent.setAction(MusicalService.PLAY_AUDIO_ACTION_NAME);
+            intent.putExtra(MusicalService.ID_TAG, clickedSong.getId());
+            context.sendBroadcast(intent);
         });
     }
 
